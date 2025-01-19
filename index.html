@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Model Viewer with WebGL and QR Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #uploader {
+            margin: 20px;
+        }
+        #qrcode img {
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>3D Model Viewer with WebGL and QR Code</h1>
+    <div id="uploader">
+        <input type="file" id="modelUpload" accept=".obj,.gltf,.glb">
+        <button id="uploadButton">Upload</button>
+    </div>
+    <div id="qrcode">
+        <h3>Scan to View:</h3>
+        <img id="qrImage" alt="QR Code will appear here">
+    </div>
+    <script>
+        const uploadButton = document.getElementById('uploadButton');
+        const qrImage = document.getElementById('qrImage');
+
+        uploadButton.addEventListener('click', () => {
+            const fileInput = document.getElementById('modelUpload');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select a file first!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.file_url && data.qr_code_url) {
+                    qrImage.src = data.qr_code_url;
+                    qrImage.style.display = 'block';
+                    alert('File uploaded and QR Code generated successfully!');
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error occurred.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while uploading the file.');
+            });
+        });
+    </script>
+</body>
+</html>
